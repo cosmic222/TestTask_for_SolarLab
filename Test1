@@ -1,0 +1,172 @@
+using System;
+using System.Collections.Generic;
+namespace TESTtest
+{
+    class Task
+    {
+        private string description;
+        private bool isDone;
+        public bool IsDone   // property
+        {
+            get { return isDone; }
+            set { isDone = value; }
+        }
+        public string Description   // property
+        {
+            get { return description; }
+            set { description = value; }
+        }
+        public Task(string str)
+        {
+            description = str;
+            isDone = false;
+        }
+
+    }
+    class TaskList
+    {
+        private List<Task> l_task;
+        public TaskList()
+        { l_task = new List<Task>(); }
+        public void AddTask(string str)
+        {
+            l_task.Add(new Task(str));
+        }
+
+        public Task this[int number]
+        {
+            get { return l_task[number]; }
+            set { l_task[number] = value; }
+        }
+        public int Count
+        {
+            get {return l_task.Count;}
+        }
+        public void RemoveAt (int idx)
+        {
+            l_task.RemoveAt (idx);
+        }
+        public void AddTask(Task task)
+        {
+            l_task.Add(task);
+        }
+}
+abstract class ICommand
+{
+    public abstract void Execute(ref TaskList tasks, string str = null);
+    public abstract string Name();
+}
+
+class CommandPrint : ICommand
+{
+    public override void Execute(ref TaskList tasks, string str = null)
+    {
+        Console.WriteLine();
+        for (int i = 0; i < tasks.Count; ++i)
+        {
+            Console.Write("[ ");
+            Console.Write(System.Convert.ToString(i));
+            Console.Write(" ] ");
+            if (tasks[i].IsDone) Console.Write(" DONE ");
+            else
+                Console.WriteLine(tasks[i].Description);
+        }
+        Console.WriteLine();
+    }
+    public override string Name()
+    {
+        return "Показать список задач на сегодня";
+    }
+}
+class CommandAdd : ICommand
+{
+    public override void Execute(ref TaskList tasks, string str = null)
+    {
+
+        tasks.AddTask(str);
+    }
+    public override string Name()
+    {
+        return "Добавить новую задачу";
+    }
+}
+
+class CommandDelete : ICommand
+{
+    public override void Execute(ref TaskList tasks, string str = null)
+    {
+        int idx = System.Convert.ToInt32(str);
+        tasks.RemoveAt(idx);
+    }
+    public override string Name()
+    {
+        return "Удалить задачу №";
+    }
+}
+
+class CommandChange : ICommand
+{
+    public override void Execute(ref TaskList tasks, string str = null)
+    {
+        string[] args = str.Split(' ');
+        int idx = System.Convert.ToInt32(args[0]);
+        tasks[idx].Description = args[1];
+    }
+    public override string Name()
+    {
+        return "Редактировать задачу. (После запуска программы введите номер задачи и через пробел отредактированный тест задачи));";
+    }
+}
+
+class CommandAddDone : ICommand
+{
+    public override void Execute(ref TaskList tasks, string str = null)
+    {
+        int idx = System.Convert.ToInt32(str);
+        tasks[idx].IsDone = true;
+    }
+    public override string Name()
+    {
+        return "Отметить задачу как выполненную;";
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Task task1 = new Task("");
+        task1.Description = "проснуться по будильнику";
+
+        Task task2 = new Task("");
+        task2.Description = "умыться и почистить зубы";
+
+        TaskList tasks = new TaskList();
+        tasks.AddTask(task1);
+        tasks.AddTask(task2);
+        //create list of commands
+        List<ICommand> command_list = new List<ICommand>();
+        command_list.Add(new CommandPrint());
+        command_list.Add(new CommandAdd());
+        command_list.Add(new CommandDelete());
+        command_list.Add(new CommandChange());
+        command_list.Add(new CommandAddDone());
+
+        while (true)
+        {
+            Console.WriteLine(" Выберите команду!");
+            for (int i = 0; i < command_list.Count; ++i)
+            {
+                Console.Write(System.Convert.ToString(i));
+                Console.Write(" - ");
+                Console.WriteLine(command_list[i].Name());
+            }
+            int key;
+            key = System.Convert.ToInt32(Console.ReadLine());
+            string arg;
+            arg = Console.ReadLine();
+            command_list[key].Execute(ref tasks, arg);
+        }
+    }
+}
+}
